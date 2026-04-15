@@ -1,0 +1,7 @@
+python-dotenv
+requests
+ollama
+langgraph
+streamlit
+reportlab
+google-genai
