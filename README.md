@@ -1,4 +1,4 @@
-# 🧠 Multi-Agent AI Research Assistant
+#  Multi-Agent AI Research Assistant
 
 An AI-powered research tool that generates structured, citation-backed reports using a multi-agent pipeline.
 
