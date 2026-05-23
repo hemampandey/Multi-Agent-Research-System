@@ -4,6 +4,10 @@ An AI-powered research tool that generates structured, citation-backed reports u
 
 ---
 
+<img width="1212" height="302" alt="Screenshot 2026-04-15 at 11 38 34 PM" src="https://github.com/user-attachments/assets/82ef90ef-a4dd-4e08-a2e5-5fa5f2cda763" />
+
+---
+
 ## 🚀 Live Demo
 
 🔗 [Demo](https://multi-agent-research-system-hemam.streamlit.app/)
@@ -48,9 +52,38 @@ This system follows a structured pipeline:
 
 ---
 
-## 🧩 Architecture
+---
 
-<img width="1212" height="302" alt="Screenshot 2026-04-15 at 11 38 34 PM" src="https://github.com/user-attachments/assets/82ef90ef-a4dd-4e08-a2e5-5fa5f2cda763" />
+## 📸 Screenshots
+
+<img width="1200" height="700" alt="Screenshot 2026-04-15 at 11 04 13 PM" src="https://github.com/user-attachments/assets/5da3a973-8977-4026-8610-93c8e8bb03f9" />
+<img width="1200" height="700" alt="Screenshot 2026-04-15 at 11 04 36 PM" src="https://github.com/user-attachments/assets/fa4acde6-b683-491f-b4f9-e1230bba8e2e" />
+
+---
+
+## 🎯 Key Highlights
+
+* Designed a modular multi-agent pipeline
+* Integrated real-time data retrieval to reduce hallucinations
+* Implemented caching and depth control for optimized performance
+* Built a production-like UI with export and citation features
+
+---
+
+## ⚠️ Limitations
+
+* Depends on external API rate limits
+* LLM output quality may vary
+* Demo version includes usage constraints
+
+---
+
+## 🚀 Future Improvements
+
+* Add user authentication
+* Store past research history
+* Improve citation accuracy
+* Add multi-document input support
 
 ---
 
@@ -89,46 +122,5 @@ TAVILY_API_KEY=your_key
 ```bash
 streamlit run streamlit_app.py
 ```
-
----
-
-## 📸 Screenshots
-
-<img width="1200" height="700" alt="Screenshot 2026-04-15 at 11 04 13 PM" src="https://github.com/user-attachments/assets/5da3a973-8977-4026-8610-93c8e8bb03f9" />
-<img width="1200" height="700" alt="Screenshot 2026-04-15 at 11 04 36 PM" src="https://github.com/user-attachments/assets/fa4acde6-b683-491f-b4f9-e1230bba8e2e" />
-
-
----
-
-## 🎯 Key Highlights
-
-* Designed a modular multi-agent pipeline
-* Integrated real-time data retrieval to reduce hallucinations
-* Implemented caching and depth control for optimized performance
-* Built a production-like UI with export and citation features
-
----
-
-## ⚠️ Limitations
-
-* Depends on external API rate limits
-* LLM output quality may vary
-* Demo version includes usage constraints
-
----
-
-## 🚀 Future Improvements
-
-* Add user authentication
-* Store past research history
-* Improve citation accuracy
-* Add multi-document input support
-
----
-
-## 👤 Author
-
-Hemam Pandey
-GitHub: https://github.com/hemampandey
 
 ---
