@@ -8,7 +8,7 @@ An AI-powered research tool that generates structured, citation-backed reports u
 
 ---
 
-## 🚀 Live Demo
+##  Live Demo
 
 🔗 [Demo](https://multi-agent-research-system-hemam.streamlit.app/)
 
