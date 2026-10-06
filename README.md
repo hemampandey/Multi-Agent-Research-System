@@ -62,7 +62,7 @@ The system follows a structured pipeline:
 * 📄 **PDF Export**: Instant ReportLab-based PDF compile and download button.
 * 🌐 **Interactive Streamlit Web UI**: Premium dark/light responsive interface.
 * 🛡 **Guardrails**: Input validation, prompt-injection filtering of web content, citation and PII checks on output, and an LLM-call budget.
-* 📏 **Evaluations**: A dataset of topics scored by code-based metrics plus an LLM-as-judge, with run-to-run comparison.
+* 📏 **Evaluations**: A dataset of topics scored by code-based metrics, an LLM-as-judge and [Ragas](https://docs.ragas.io/) (faithfulness, context relevance), with run-to-run comparison.
 * 🧪 **Test Harness**: Swappable LLM and search backends, per-node tracing, and a 40+ test offline `pytest` suite.
 
 ---
@@ -159,8 +159,14 @@ uv run python -m evals.run_evals --offline
 uv run python -m evals.run_evals
 uv run python -m evals.run_evals --only rag-basics --no-judge
 
+# Add Ragas metrics (faithfulness, context relevance); install them once first
+uv sync --group evals
+uv run python -m evals.run_evals --ragas --only crispr-agriculture
+
 # CLI run that saves a full JSON trace to runs/
 uv run python -m app.main "Solid-state batteries" --mode Basic
 ```
 
-Optional environment variables: `MODEL_NAME` (pipeline model) and `JUDGE_MODEL_NAME` (eval judge, ideally a different, stronger model).
+Optional environment variables: `MODEL_NAME` (pipeline model, default `gemini-2.5-flash-lite`) and `JUDGE_MODEL_NAME` (eval judge and Ragas, default `gemini-2.5-flash`).
+
+> **Free-tier quota:** Gemini's free tier allows about 20 requests per model per day. One report uses 3–6 requests, the judge 1 more, and Ragas about 4 more. Use `--only` to run a few cases at a time.

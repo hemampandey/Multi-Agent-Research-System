@@ -4,9 +4,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 MODEL_NAME = os.getenv("MODEL_NAME", "gemini-2.5-flash-lite")
-# The evals' LLM-as-judge. Ideally a different (stronger) model than the one
-# being graded, because models tend to rate their own writing too kindly.
-JUDGE_MODEL_NAME = os.getenv("JUDGE_MODEL_NAME", MODEL_NAME)
+# The evals' LLM-as-judge (also used by Ragas). A different, stronger model
+# than the one being graded, because models rate their own writing too kindly.
+# On Gemini's free tier each model also has its own daily request quota, so
+# evals don't eat into the app's quota.
+JUDGE_MODEL_NAME = os.getenv("JUDGE_MODEL_NAME", "gemini-2.5-flash")
 
 # Pipeline limits
 MAX_QUESTIONS = 3            # planner sub-questions used in Advanced mode

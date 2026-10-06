@@ -3,6 +3,7 @@
     python -m evals.run_evals                 # real Gemini + Tavily (costs API calls)
     python -m evals.run_evals --offline       # fakes: checks the eval plumbing for free
     python -m evals.run_evals --no-judge      # skip the LLM-as-judge
+    python -m evals.run_evals --ragas         # add Ragas metrics (~4 more LLM calls per report)
     python -m evals.run_evals --only rag-basics guard-injection
 
 Each run is saved to evals/results/ and compared with the previous one, so you
@@ -23,6 +24,7 @@ from app.harness.runner import run_research
 from app.llm import gemini_backend
 from evals.judge import failed_judgements, judge_report
 from evals.metrics import failed_checks, score_report
+from evals.ragas_metrics import failed_ragas, ragas_scores
 
 EVALS_DIR = Path(__file__).parent
 RESULTS_DIR = EVALS_DIR / "results"
@@ -32,7 +34,7 @@ def load_cases(path: Path = EVALS_DIR / "dataset.jsonl") -> list[dict]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
-def run_case(case: dict, *, offline: bool = False, use_judge: bool = True) -> dict:
+def run_case(case: dict, *, offline: bool = False, use_judge: bool = True, use_ragas: bool = False) -> dict:
     llm, search = (FakeLLM(), FakeSearch()) if offline else (None, None)
     result = run_research(case["topic"], case.get("mode", "Advanced"), llm=llm, search=search)
 
@@ -71,6 +73,12 @@ def run_case(case: dict, *, offline: bool = False, use_judge: bool = True) -> di
         if "error" not in judgement:
             for name, item in judgement.items():
                 scores[f"judge_{name}"] = item["score"]
+
+    # Ragas needs a real LLM (it relies on structured output), so it's skipped offline
+    if use_ragas and not offline:
+        ragas = ragas_scores(result.topic, result.final_report, result.data)
+        failures += failed_ragas(ragas)
+        scores.update({k: v for k, v in ragas.items() if k != "errors"})
 
     record.update(scores=scores, passed=not failures, failures=failures)
     return record
@@ -114,6 +122,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--offline", action="store_true", help="use fake LLM and search")
     parser.add_argument("--no-judge", action="store_true", help="skip LLM-as-judge scoring")
+    parser.add_argument("--ragas", action="store_true", help="add Ragas faithfulness + context relevance")
     parser.add_argument("--only", nargs="+", metavar="ID", help="run only these case ids")
     args = parser.parse_args(argv)
 
@@ -128,7 +137,7 @@ def main(argv=None) -> int:
     records = []
     for case in cases:
         print(f"running {case['id']} ...", flush=True)
-        records.append(run_case(case, offline=args.offline, use_judge=not args.no_judge))
+        records.append(run_case(case, offline=args.offline, use_judge=not args.no_judge, use_ragas=args.ragas))
 
     summary = summarize(records)
     # Offline runs aren't comparable with real ones, so they're not saved

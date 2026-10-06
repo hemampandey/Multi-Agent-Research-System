@@ -19,6 +19,10 @@ dependencies = [
 dev = [
     "pytest>=9.1.1",
 ]
+evals = [
+    "jsonref>=1.1.0",
+    "ragas>=0.4.3",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

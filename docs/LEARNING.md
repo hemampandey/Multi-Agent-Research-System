@@ -103,6 +103,28 @@ Key ideas in the code:
 4. Add 3–5 topics from your own domain to the dataset. A good eval set covers the inputs your real users send.
 5. Rate 5 reports yourself 1–5, then compare with the judge. If you disagree a lot, improve the rubric before trusting it.
 
+### Ragas: the same ideas, as a library
+
+[Ragas](https://docs.ragas.io/) is a widely used library of RAG evaluation metrics. It sits next to our own metrics in [evals/ragas_metrics.py](../evals/ragas_metrics.py) and is turned on with `--ragas`.
+
+| Ragas metric | How it works | Closest to ours |
+|---|---|---|
+| **Faithfulness** | Splits the report into individual claims, checks each against the sources, then scores supported ÷ total | `judge_groundedness`, which is one overall 1–5 score |
+| **Context relevance** | Grades whether the *search results* fit the topic | Nothing: it's the first metric that scores the researcher agent |
+
+The first real run already showed why claim-level checking matters:
+
+```
+judge_groundedness       5      ← "perfectly grounded"
+ragas_faithfulness       0.945  ← about 1 in 20 claims isn't backed by any source
+```
+
+Two lessons:
+- **Different evaluators disagree.** Neither one is "the truth". When they differ, read the report yourself and see which one was right.
+- **Libraries have rough edges.** Ragas' built-in Gemini setup creates a *sync* client, but its metrics are *async*. `build_llm()` works around that, and the comment there explains why. Reading the library's source to get past problems like this is a normal part of using one.
+
+Ragas also has metrics that need a hand-written *reference answer* per case (context recall, answer correctness). Adding `reference` to a few dataset cases would be a good exercise.
+
 ---
 
 ## Where to go next

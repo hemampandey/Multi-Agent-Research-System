@@ -3,6 +3,7 @@ import pytest
 from app.harness.fakes import good_report
 from evals.judge import failed_judgements, parse_judgement
 from evals.metrics import failed_checks, score_report
+from evals.ragas_metrics import failed_ragas, split_contexts
 from evals.run_evals import load_cases, run_case
 
 
@@ -36,6 +37,22 @@ def test_parse_judgement_tolerates_formats(raw):
 @pytest.mark.parametrize("raw", ["no json here", '{"groundedness": 9}', "{not json}"])
 def test_parse_judgement_reports_errors(raw):
     assert "error" in parse_judgement(raw)
+
+
+def test_split_contexts_gives_one_context_per_source():
+    data = "[1] A (https://a)\nFirst source.\n\nStill first.\n\n[2] B (https://b)\nSecond source."
+    assert split_contexts(data) == [
+        "[1] A (https://a)\nFirst source.\n\nStill first.",
+        "[2] B (https://b)\nSecond source.",
+    ]
+
+
+def test_failed_ragas():
+    scores = {"ragas_faithfulness": 0.5, "ragas_context_relevance": None,
+              "errors": ["ragas_context_relevance: 429 quota"]}
+    failures = failed_ragas(scores)
+    assert "ragas_faithfulness 0.5 < 0.8" in failures
+    assert any("429" in f for f in failures)
 
 
 def test_every_dataset_case_passes_offline():
