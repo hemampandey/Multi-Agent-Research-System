@@ -1,4 +1,4 @@
-#  Multi-Agent AI Research Assistant
+# 🧠 Multi-Agent AI Research Assistant
 
 An AI-powered research tool that generates structured, citation-backed reports using a multi-agent pipeline.
 
@@ -8,7 +8,7 @@ An AI-powered research tool that generates structured, citation-backed reports u
 
 ---
 
-##  Live Demo
+## 🚀 Live Demo
 
 🔗 [Demo](https://multi-agent-research-system-hemam.streamlit.app/)
 
@@ -18,39 +18,63 @@ An AI-powered research tool that generates structured, citation-backed reports u
 
 This project simulates a **multi-agent research system** where different AI agents collaborate to produce high-quality research reports from real-time web data.
 
-This system follows a structured pipeline:
+### 📐 System Architecture
 
-* Planner → breaks topic into sub-questions
-* Researcher → fetches real-time data
-* Writer → generates structured report
-* Critic → refines output for clarity
+The workflow is orchestrated using **LangGraph** to ensure clean state transitions and structured coordination between specialized agents:
+
+```mermaid
+graph TD
+    Start([User Input]) --> InGuard[🛡 Input Guard]
+    InGuard -->|Blocks injection / harmful / empty topics| Planner[Planner Agent]
+    Planner -->|Generates Sub-Questions| Researcher[Researcher Agent]
+    Researcher -->|Tavily search + sanitized, numbered sources| Writer[Writer Agent]
+    Writer -->|Drafts Markdown Report| Critic[Critic Agent]
+    Critic -->|REJECT: feedback| Writer
+    Critic -->|ACCEPT| OutGuard[🛡 Output Guard]
+    OutGuard -->|Fixes bad citations, redacts PII| Output([Final Report & PDF Export])
+    
+    style Start fill:#f9f,stroke:#333,stroke-width:2px
+    style Output fill:#bbf,stroke:#333,stroke-width:2px
+    style Planner fill:#fef,stroke:#333,stroke-width:1px
+    style Researcher fill:#eff,stroke:#333,stroke-width:1px
+    style Writer fill:#ffe,stroke:#333,stroke-width:1px
+    style Critic fill:#fbf,stroke:#333,stroke-width:1px
+```
+
+The system follows a structured pipeline:
+* **Planner** → Breaks the main research topic down into target research questions.
+* **Researcher** → Fetches real-time web data for each question.
+* **Writer** → Compiles search results into a cohesive, cited report.
+* **Critic** → Accepts and polishes the report, or rejects it with feedback for another draft.
+* **Guardrails** → Check the topic on the way in, web content in the middle, and the report on the way out.
 
 ---
 
 ## ✨ Features
 
-* 🧠 Multi-agent architecture (Planner, Researcher, Writer, Critic)
-* 🔄 LangGraph-based workflow orchestration
-* 🌐 Real-time web search using Tavily API
-* 🤖 LLM-powered generation using Google Gemini API
-* 📚 Inline citations + source references
-* 🎛 Depth mode (Basic vs Advanced)
-* ⚡ Caching for faster responses
-* 📄 PDF export functionality
-* 🌐 Interactive UI built with Streamlit
+* 🧠 **Multi-agent Architecture**: Dedicated Planner, Researcher, Writer, and Critic modules.
+* 🔄 **LangGraph-based Orchestration**: Stateful agentic workflow rather than rigid sequential chains.
+* 🌐 **Real-time Web Search**: Leverages Tavily API for highly accurate, search-engine-optimized retrieval.
+* 🤖 **Gemini 2.5 LLM Engine**: Powered by Google's cutting-edge `gemini-2.5-flash-lite` for blazing-fast inference and high accuracy.
+* 📚 **Citation-Backed Generation**: Automatically embeds inline citation numbers (`[1]`, `[2]`) pointing to sources.
+* 🎛 **Depth Modes**: Toggle between `Basic` and `Advanced` search depth.
+* ⚡ **Caching**: Smart caching of graph runs to optimize tokens and speed.
+* 📄 **PDF Export**: Instant ReportLab-based PDF compile and download button.
+* 🌐 **Interactive Streamlit Web UI**: Premium dark/light responsive interface.
+* 🛡 **Guardrails**: Input validation, prompt-injection filtering of web content, citation and PII checks on output, and an LLM-call budget.
+* 📏 **Evaluations**: A dataset of topics scored by code-based metrics plus an LLM-as-judge, with run-to-run comparison.
+* 🧪 **Test Harness**: Swappable LLM and search backends, per-node tracing, and a 40+ test offline `pytest` suite.
 
 ---
 
 ## 🛠 Tech Stack
 
-* Python
-* LangGraph
-* Google Gemini API
-* Tavily API
-* Streamlit
-* ReportLab
-
----
+* **Language**: Python >= 3.13
+* **Orchestration**: LangGraph
+* **Inference Engine**: Google GenAI SDK (`google-genai`)
+* **Search Engine**: Tavily Search API
+* **Web Frontend**: Streamlit
+* **Document Compilation**: ReportLab
 
 ---
 
@@ -61,42 +85,41 @@ This system follows a structured pipeline:
 
 ---
 
-## 🎯 Key Highlights
+## 🎯 Key Engineering Highlights
 
-* Designed a modular multi-agent pipeline
-* Integrated real-time data retrieval to reduce hallucinations
-* Implemented caching and depth control for optimized performance
-* Built a production-like UI with export and citation features
+* **Modular Agent Design**: Separation of agent concerns makes adding new nodes or tweaking prompts incredibly straightforward.
+* **Real-time Data Grounding**: Minimizes model hallucinations by basing generations strictly on retrieved web source material.
+* **Robust Execution**: Designed with retry logic for LLM interfaces to withstand transient API connection glitches.
 
 ---
 
-## ⚠️ Limitations
+## ⚠️ Current Limitations
 
-* Depends on external API rate limits
-* LLM output quality may vary
-* Demo version includes usage constraints
+* Depends on external API rate limits (Tavily and Gemini).
+* PDF generation is optimized for text; raw HTML characters in generation can occasionally conflict with rendering.
+* Demo version has search-depth limits.
 
 ---
 
 ## 🚀 Future Improvements
 
-* Add user authentication
-* Store past research history
-* Improve citation accuracy
-* Add multi-document input support
+* Add a moderation model on top of the regex-based input guardrails.
+* Run the offline test suite and eval smoke test in CI (GitHub Actions).
+* Store historical research runs in local SQLite/PostgreSQL.
+* Support uploading custom PDF reference files as context.
 
 ---
 
 ## ⚙️ Installation & Setup
 
+Ensure you have [Python 3.13+](https://www.python.org/) installed. We recommend using `uv` for lightning-fast package management.
+
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/hemampandey/ai-research-agent.git
-cd ai-research-agent
+git clone https://github.com/hemampandey/Multi-Agent-Research-System.git
+cd Multi-Agent-Research-System
 ```
-
----
 
 ### 2. Install dependencies
 
@@ -104,23 +127,40 @@ cd ai-research-agent
 pip install -r requirements.txt
 ```
 
----
+### 3. Add Environment Variables
 
-### 3. Add environment variables
-
-Create a `.env` file:
+Create a `.env` file in the root directory:
 
 ```env
-GEMINI_API_KEY=your_key
-TAVILY_API_KEY=your_key
+GEMINI_API_KEY=your_gemini_api_key_here
+TAVILY_API_KEY=your_tavily_api_key_here
 ```
 
----
-
-### 4. Run the app
+### 4. Run the Streamlit Application
 
 ```bash
 streamlit run streamlit_app.py
 ```
 
 ---
+
+## 🛡 Evaluations, Guardrails & Harness
+
+New to these ideas? Start with **[docs/LEARNING.md](docs/LEARNING.md)**. It explains each concept, where it lives in the code, and gives exercises.
+
+```bash
+# Tests: fake LLM + fake search, no API keys needed, runs in under a second
+uv run pytest
+
+# Evals offline: checks that the eval machinery works, for free
+uv run python -m evals.run_evals --offline
+
+# Evals for real: scores actual reports and compares with the previous run
+uv run python -m evals.run_evals
+uv run python -m evals.run_evals --only rag-basics --no-judge
+
+# CLI run that saves a full JSON trace to runs/
+uv run python -m app.main "Solid-state batteries" --mode Basic
+```
+
+Optional environment variables: `MODEL_NAME` (pipeline model) and `JUDGE_MODEL_NAME` (eval judge, ideally a different, stronger model).

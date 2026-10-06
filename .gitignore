@@ -9,3 +9,8 @@ wheels/
 
 # Virtual environments
 .venv
+.DS_Store
+
+# Run artifacts
+runs/
+evals/results/
