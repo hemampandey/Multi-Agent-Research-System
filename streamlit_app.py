@@ -1,13 +1,14 @@
 import streamlit as st
-from app.graph import graph
+from app.harness.runner import run_research
 from app.utils.pdf import create_pdf_buffer
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def run_graph(topic, mode):
-    return graph.invoke({
-        "topic": topic,
-        "mode": mode
-    })
+    result = run_research(topic, mode)
+    if result.error_code in ("llm_error", "budget_exceeded"):
+        # Raising keeps transient failures out of the cache, so a retry really retries
+        raise RuntimeError(result.error)
+    return result.to_dict()
 
 st.set_page_config(page_title="AI Research Agent", layout="wide")
 
@@ -23,16 +24,27 @@ with col2:
 
 if st.button("Generate Report"):
     if topic:
-        st.info("🧠 Planner → 🔍 Researcher → ✍️ Writer → 🧪 Critic")
+        st.info("🛡 Input guard → 🧠 Planner → 🔍 Researcher → ✍️ Writer ⇄ 🧪 Critic → 🛡 Output guard")
 
         with st.spinner("Running AI pipeline..."):
-            result = run_graph(topic, mode)
-        st.session_state["result"] = result
+            try:
+                st.session_state["result"] = run_graph(topic, mode)
+            except RuntimeError as e:
+                st.session_state.pop("result", None)
+                st.error(f"The AI service failed, please try again. ({e})")
     else:
         st.warning("Please enter a topic")
 
 if "result" in st.session_state:
     result = st.session_state["result"]
+
+    if result["error"]:
+        st.error(f"⛔ {result['error']}")
+        st.stop()
+
+    flagged = [e for e in result["guardrail_events"] if e["action"] == "flagged"]
+    for e in flagged:
+        st.warning(f"⚠️ {e['guard']}: {e['detail']}")
 
     st.subheader("📄 Report")
     st.markdown(result["final_report"])
@@ -43,6 +55,16 @@ if "result" in st.session_state:
     for i, url in enumerate(result["sources"], 1):
         st.markdown(f"{i}. {url}")
 
+    with st.expander(f"🛡 Guardrail events ({len(result['guardrail_events'])})"):
+        if result["guardrail_events"]:
+            st.table(result["guardrail_events"])
+        else:
+            st.write("No interventions were needed.")
+
+    with st.expander("🔍 Run trace"):
+        st.json(result["trace"]["summary"])
+        st.table(result["trace"]["spans"])
+
     pdf_buffer = create_pdf_buffer(result["final_report"])
 
     st.download_button(
@@ -51,4 +73,3 @@ if "result" in st.session_state:
         file_name="report.pdf",
         mime="application/pdf"
     )
-    

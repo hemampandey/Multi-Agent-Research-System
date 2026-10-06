@@ -1,4 +1,19 @@
+import re
+
 from app.llm import generate
+
+_LIST_MARKER_RE = re.compile(r"^\s*(?:[-*•]|\d+[.)])\s*")
+
+
+def parse_questions(text):
+    """Turn the model's list into clean questions, tolerating bullets/numbering."""
+    questions = []
+    for line in text.splitlines():
+        question = _LIST_MARKER_RE.sub("", line).strip().strip("*").strip()
+        if len(question) >= 5:
+            questions.append(question)
+    return questions
+
 
 def create_plan(topic):
     prompt = f"""
@@ -8,16 +23,9 @@ def create_plan(topic):
     - One line per question
     - No explanations
     - No headings
-    - Only clean questions    
+    - Only clean questions
 
     Topic: {topic}
     """
 
-    response = generate(prompt)
-
-    questions = []
-    for line in response.split("\n"):
-        if line.strip():
-            questions.append(line.split(". ",1)[-1])
-
-    return questions
+    return parse_questions(generate(prompt))
