@@ -63,6 +63,16 @@ Two outcome styles, chosen per risk:
 
 **Limits to know:** regex filters are easy to evade, and they also produce false positives. Look at `test_legitimate_topics_pass`: "History of the atomic bomb" must still be allowed. Real systems add a moderation model, but the block / repair / record shape stays the same.
 
+### Case study: the injection that got through
+
+The first version of the input check matched only a few exact phrasings. "Ignore all previous instructions" was blocked, but "ignore *your* instructions", "Forget all previous instructions" and "Act as DAN" were not: **3 of 16 attacks caught**. The fix shows the standard pattern:
+
+1. **Layer 1, broader regex** ([input.py](../app/guardrails/input.py)): free and instant. It now catches 14 of the 16, while tests confirm real topics like "How enzymes act as catalysts" still pass. Patterns that are only suspicious in a topic ("respond with") are kept out of the web-content filter, because articles use them innocently.
+2. **Layer 2, LLM classifier** ([classifier.py](../app/guardrails/classifier.py)): judges *intent*, so it catches rephrasings no pattern predicts. It runs only after layer 1 passes, so obvious attacks cost nothing.
+3. **Tests vs evals:** the pytest cases use a *fake* classifier, so they prove the wiring. Eval cases marked `requires_llm` prove that *real Gemini* classifies correctly.
+
+A real eval run then showed layer 3 working too. Researching "Prompt injection attacks" pulled in articles that quote example attacks, and `content.removed_injection` removed those lines before the writer saw them.
+
 **Try it:**
 1. Add a guardrail that flags reports where one source is cited for more than 60% of all citations ("single-source bias"). Write the test first.
 2. Find a phrasing that gets past `INJECTION_RE`, add it to the test's parametrize list, then fix the pattern.

@@ -13,16 +13,35 @@ MIN_TOPIC_CHARS = 3
 MAX_TOPIC_CHARS = 200
 MODES = ("Basic", "Advanced")
 
-# Direct prompt injection: the user trying to override our instructions.
+# Layer 1 against direct prompt injection: the user trying to override our
+# instructions. Fast and free, but it only matches wordings we thought of,
+# so classifier.py adds an LLM check as layer 2.
+# Each pattern is kept narrow on purpose: "How enzymes act as catalysts" or
+# "Senate rules on filibusters" must still pass (see tests).
 INJECTION_PATTERNS = [
-    r"ignore\s+(all\s+|any\s+|the\s+)?(previous|prior|above|earlier)\s+(instructions|prompts?|rules)",
-    r"disregard\s+(all\s+|the\s+|your\s+)?(previous|prior|above|system)",
+    # ignore / forget / disregard / override + (your|previous|...) instructions
+    r"\b(ignore|forget|disregard|override)\s+(all\s+|any\s+|of\s+)*"
+    r"(your|the|my|these|those|previous|prior|above|earlier)?\s*"
+    r"(previous\s+|prior\s+|above\s+|earlier\s+|system\s+)?(instructions?|directions?|guidelines|prompts?)\b",
+    r"\b(ignore|forget|disregard|override)\s+(all\s+)?(your|previous|prior|the\s+above)\s+rules\b",
+    r"\b(ignore|disregard)\s+(the\s+)?(instructions?|directions?|rules)\s+above\b",
+    r"\bnew\s+instructions?\s*:",
     r"(reveal|print|show|repeat)\s+(me\s+)?(your|the)\s+(system\s+)?(prompt|instructions)",
-    r"\byou\s+are\s+now\b",
+    r"\byour\s+system\s+prompt\b",
     r"\bjailbreak\b",
     r"</?\s*(system|assistant|instructions?)\s*>",
 ]
+# Only suspicious in a *topic*. Web pages say "respond with" or "you are now"
+# innocently, so content.py uses INJECTION_RE without these.
+TOPIC_ONLY_PATTERNS = [
+    r"\bforget\s+everything\b",
+    r"\b(instead\s+of|do\s+not|don'?t)\s+(writ(e|ing)\s+)?(a|the)\s+report\b",
+    r"\bpretend\s+(you\s+are|to\s+be|you'?re)\b",
+    r"\byou\s+are\s+now\b",
+    r"\b(output|reply|respond)\s+(only|with)\b|\bjust\s+say\b",
+]
 INJECTION_RE = re.compile("|".join(INJECTION_PATTERNS), re.IGNORECASE)
+TOPIC_INJECTION_RE = re.compile("|".join(INJECTION_PATTERNS + TOPIC_ONLY_PATTERNS), re.IGNORECASE)
 
 # Topics we refuse to research at all.
 BLOCKED_TOPIC_RE = re.compile(
@@ -45,7 +64,7 @@ def validate_topic(raw: str | None) -> str:
         raise GuardrailViolation(
             "topic_too_long", f"Topic must be at most {MAX_TOPIC_CHARS} characters."
         )
-    if INJECTION_RE.search(topic):
+    if TOPIC_INJECTION_RE.search(topic):
         raise GuardrailViolation(
             "prompt_injection", "The topic looks like an attempt to override the assistant's instructions."
         )

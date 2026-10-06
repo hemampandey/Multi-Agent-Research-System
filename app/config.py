@@ -11,7 +11,7 @@ JUDGE_MODEL_NAME = os.getenv("JUDGE_MODEL_NAME", MODEL_NAME)
 # Pipeline limits
 MAX_QUESTIONS = 3            # planner sub-questions used in Advanced mode
 MAX_REVISIONS = 2            # critic rejections before we ship the latest draft (= max drafts)
-MAX_LLM_CALLS_PER_RUN = 12   # cost guardrail; a normal run uses at most 5
+MAX_LLM_CALLS_PER_RUN = 12   # cost guardrail; a normal run uses at most 6
 MAX_SOURCE_CHARS = 1500      # per search result, after sanitizing
 
 _KEY_HINTS = {

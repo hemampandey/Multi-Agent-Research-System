@@ -12,7 +12,7 @@ def run_graph(topic, mode):
 
 st.set_page_config(page_title="AI Research Agent", layout="wide")
 
-st.title("🧠 Multi-Agent Research System")
+st.title("Multi-Agent Research System")
 
 col1, col2 = st.columns([2,1])
 
@@ -24,8 +24,6 @@ with col2:
 
 if st.button("Generate Report"):
     if topic:
-        st.info("🛡 Input guard → 🧠 Planner → 🔍 Researcher → ✍️ Writer ⇄ 🧪 Critic → 🛡 Output guard")
-
         with st.spinner("Running AI pipeline..."):
             try:
                 st.session_state["result"] = run_graph(topic, mode)

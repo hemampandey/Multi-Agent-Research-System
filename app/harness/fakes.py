@@ -46,6 +46,7 @@ def _topic_of(prompt: str) -> str:
 class FakeLLM:
     # Checked in order: the first marker found in the prompt decides the role
     ROLES = {
+        "topic_guard": "security filter",
         "judge": "impartial evaluator",
         "planner": "Break this topic",
         "writer_revise": "You are revising",
@@ -64,6 +65,8 @@ class FakeLLM:
         return sum(1 for r, _ in self.calls if r == role)
 
     def _default(self, role: str, prompt: str) -> str:
+        if role == "topic_guard":
+            return "RESEARCH_TOPIC"
         if role == "planner":
             return "1. What is it?\n2. Why does it matter?\n3. How is it used today?\n4. What are its limits?"
         if role in ("writer", "writer_revise"):

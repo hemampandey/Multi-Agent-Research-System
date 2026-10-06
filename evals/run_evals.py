@@ -118,6 +118,10 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
 
     cases = load_cases()
+    if args.offline:
+        # These check the real model's judgement (e.g. the safety classifier),
+        # which a fake can't stand in for
+        cases = [c for c in cases if not c.get("requires_llm")]
     if args.only:
         cases = [c for c in cases if c["id"] in args.only]
 

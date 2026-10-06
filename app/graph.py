@@ -8,6 +8,7 @@ from app.agents.critic import review_report
 from app.agents.planner import create_plan
 from app.agents.writer import generate_report
 from app.guardrails import GuardrailViolation, event
+from app.guardrails.classifier import classify_topic
 from app.guardrails.content import is_allowed_url, sanitize_source_text
 from app.guardrails.input import validate_mode, validate_topic
 from app.guardrails.output import enforce_report, find_citations
@@ -31,11 +32,15 @@ class GraphState(TypedDict, total=False):
 
 
 def input_guard_node(state: GraphState):
+    topic = validate_topic(state.get("topic"))  # layer 1: free regex checks
+    mode = validate_mode(state.get("mode"))
+    events = classify_topic(topic)              # layer 2: LLM checks the intent
     return {
-        "topic": validate_topic(state.get("topic")),
-        "mode": validate_mode(state.get("mode")),
+        "topic": topic,
+        "mode": mode,
         "revision_count": 0,
         "critic_feedback": "",
+        "guardrail_events": events,
     }
 
 
